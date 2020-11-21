@@ -1,3 +1,40 @@
+<?php
+
+session_start();
+
+require_once "pdo.php";
+
+
+if(isset($_POST['log'])){
+  if(isset($_POST['pass']) && isset($_POST['userid'])){
+
+    $stmta = $pdo->query("SELECT * FROM admin");
+    $rowsa = $stmta->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rowsa as $row) {
+    if($_POST['userid']==$row['UserId'] && $_POST['pass']==$row['Pass']){
+      $_SESSION['userid']=$_POST['userid'];
+ 		 header('Location: dashboard_admin.php');
+ 		 return;
+    }
+}
+
+      $stmt = $pdo->query("SELECT * FROM hosplog");
+      $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+      foreach ($rows as $row) {
+       if(($_POST['userid']==$row['UserId']) && ($_POST['pass']==$row['Pass'])){
+         $_SESSION['userid']=$row['UserIDd'];
+         header('Location: dashboard.php');
+         return;
+
+    }
+  }
+    $_SESSION['error1']="Access Denied";
+  	header('Location: login.php');
+  	return;
+  }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,6 +50,15 @@
 </head>
 
 <body>
+  <h3 align="center" style="color:red; background:white;">
+      <?php
+        if(isset($_SESSION['error1'])){
+          echo $_SESSION['error1'];
+          unset($_SESSION['error1']);
+        }
+
+        ?>
+      </h3>
 <style>
 * {
     padding: 0;
@@ -26,10 +72,10 @@ body {
     position: absolute;
     transform: translate(-50%, -50%);
     background: url('hospital,_green.jpg');
-    
+
       background-size: cover;
   background-repeat: no-repeat;
-  
+
 }
 
 .container {
@@ -129,23 +175,28 @@ button a {
         <div class="image">
             <h1>Welcome  <span></span></h1>
         </div>
+
         <div class="content">
+          <form method="post">
             <h1>Login</h1>
             <div class="form-group">
-                <label for="">UserName</label>
+                <label for="">User ID</label>
                 <br>
-                <input type="text" class="form-control" name="" id="txt" aria-describedby="helpId" placeholder="UserName">
+                <input type="text" class="form-control" name="userid" id="txt" aria-describedby="helpId" placeholder="UserId">
 
             </div>
             <div class="form-group">
                 <label for="">Password</label>
                 <br>
-                <input type="password" class="form-control" name="" id="txt" placeholder="Password">
+                <input type="password" class="form-control" name="pass" id="txt" placeholder="Password">
             </div>
-            
+
             <br>
-            <button type="button" class="btn"><a href="index.html">Login</a></button>
+
+          <button name="log" class="btn" style="color:white; font-weight:bold;">LOGIN</button>
+        </form>
         </div>
+
     </div>
 </body>
 

@@ -22,7 +22,7 @@ if(isset($_POST['log'])){
       $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
       foreach ($rows as $row) {
        if(($_POST['userid']==$row['UserId']) && ($_POST['pass']==$row['Pass'])){
-         $_SESSION['userid']=$row['UserIDd'];
+         $_SESSION['userid']=$row['UserId'];
          header('Location: dashboard.php');
          return;
 

@@ -1,0 +1,57 @@
+q3_name[first]   firstname
+q3_name[last]    lastname
+dob              date of Birth
+q231_sex         sex
+q250_age         Age
+q247_contactNumber   contactNumber
+q225_email         Email
+q4_address4[addr_line1]   street add 1
+q4_address4[addr_line2]    street add 2
+q4_address4[city]         City
+q4_address4[state]       State
+q4_address4[postal]     zipcode
+q232_maritalStatus232     maritialstatus
+q243_fullName    emername
+q73_relationship    emerRelation
+q248_contactNumber248   emercontact
+q246_aadharNumber    aadharNumber
+q237_panNumber       panNumber
+q43_healthInsurance  Insurance
+q244_previousIllness  previousIllness
+q245_travelHistory    History
+q249_severity        Severity
+q240_symptoms        Symptoms
+myfile1             attach 1
+myfile2             attach 2
+addpat               submit
+
+
+<label class="form-sub-label" for="month_242" id="sublabel_242_month" style="min-height:13px" aria-hidden="false"> Month </label>
+</span>
+<span class="form-sub-label-container" style="vertical-align:top">
+<input type="tel" class="form-textbox validate[required, limitDate]" id="day_242" name="q242_dateOf[day]" size="2" data-maxlength="2" data-age="" maxLength="2" value="" required="" autoComplete="off" aria-labelledby="label_242 sublabel_242_day" />
+<span class="date-separate" aria-hidden="true">
+   -
+</span>
+<label class="form-sub-label" for="day_242" id="sublabel_242_day" style="min-height:13px" aria-hidden="false"> Day </label>
+</span>
+<span class="form-sub-label-container" style="vertical-align:top">
+<input type="tel" class="form-textbox validate[required, limitDate]" id="year_242" name="q242_dateOf[year]" size="4" data-maxlength="4" data-age="" maxLength="4" value="" required="" autoComplete="off" aria-labelledby="label_242 sublabel_242_year" />
+<label class="form-sub-label" for="year_242" id="sublabel_242_year" style="min-height:13px" aria-hidden="false"> Year </label>
+</span>
+</div>
+
+
+
+<span class="form-sub-label-container" style="vertical-align:top">
+  <input type="text" class="form-textbox validate[required, limitDate, validateLiteDate]" name="dob" id="lite_mode_242" size="12" data-maxlength="12" maxLength="12" data-age="" value="" required="" data-format="mmddyyyy" data-seperator="-" placeholder="MM-DD-YYYY" autoComplete="off" aria-labelledby="label_242 sublabel_242_litemode" />
+  <img class=" newDefaultTheme-dateIcon icon-liteMode" alt="Pick a Date" id="input_242_pick" src="https://cdn.jotfor.ms/images/calendar.png" data-component="datetime" aria-hidden="true" data-allow-time="No" data-version="v2" />
+  <label class="form-sub-label" for="lite_mode_242" id="sublabel_242_litemode" style="min-height:13px" aria-hidden="false"> Date </label>
+</span>
+
+
+<span class="form-sub-label-container" style="vertical-align:top">
+  <input type="tel" class="form-textbox validate[required, limitDate]" id="month_242" name="q242_dateOf[month]" size="2" data-maxlength="2" data-age="" maxLength="2" value="" required="" autoComplete="off" aria-labelledby="label_242 sublabel_242_month" />
+  <span class="date-separate" aria-hidden="true">
+     -
+  </span>

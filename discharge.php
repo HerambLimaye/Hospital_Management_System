@@ -1,11 +1,55 @@
-           
+<?php
+session_start();
+
+require_once "pdo.php";
+
+if ( !isset($_SESSION['userid']) || strlen($_SESSION['userid']) < 1  ) {
+    die('Name parameter missing');
+}
+
+if(isset($_POST['discharge'])){
+  try{
+
+    $stmtk=$pdo->prepare('SELECT * FROM patients WHERE UserIdP=:uid');
+    $stmtk->execute(array(
+      ':uid'=>$_POST['q234_patientsId']
+    ));
+
+    $rowk = $stmtk->fetchAll(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare('UPDATE patients SET status=:stat WHERE UserIdP=:uid');
+
+  $stmt->execute(array(
+    ':uid'=>$_POST['q235_patientsId'],
+    ':stat'=>$_POST['q244_reasonOf']
+  )
+  );
+
+    $stmtg = $pdo->query('SELECT Bed FROM ventilator');
+    $rowg = $stmtg->fetchAll(PDO::FETCH_ASSOC);
+    $curbed=$rowg[0]['Bed'];
+    $newbed=$curbed+1;
+    $stmth=$pdo->query('UPDATE ventilator SET bed='.$newbed.' WHERE bed='.$curbed);
 
 
+    if($rowk[0]['Severity']>=4){
+      $stmti = $pdo->query('SELECT Ventilator FROM ventilator');
+      $rowi = $stmti->fetchAll(PDO::FETCH_ASSOC);
+      $curv=$rowi[0]['Ventilator'];
+      $newv=$curv+1;
+      $stmth=$pdo->query('UPDATE ventilator SET Ventilator='.$newv.' WHERE Ventilator='.$curv);
+    }
 
-
-
-
-
+  $_SESSION['successdis']="patient discharged";
+  header('Location: discharge.php');
+  return;
+  }
+  catch(Exception $e){
+    $_SESSION['successdis']="Patient not discharged";
+    header('Location: discharge.php');
+    return;
+  }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -50,7 +94,7 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="dashboard.html">
+                <a class="nav-link" href="dashboard.php">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>STATISTICS</span></a>
             </li>
@@ -58,52 +102,60 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            
+
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="add_patient.html" data-toggle="collapse" data-target="#collapseTwo"
+                <a class="nav-link collapsed" href="add_patient.php" data-toggle="collapse" data-target="#collapseTwo"
                     aria-expanded="true" aria-controls="collapseTwo">
-                    
+
                     <span>Add patient</span>
                 </a>
-                
+
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="tables.html" data-toggle="collapse" data-target="#collapseUtilities"
+                <a class="nav-link collapsed" href="tables.php" data-toggle="collapse" data-target="#collapseUtilities"
                     aria-expanded="true" aria-controls="collapseUtilities">
                     <i class="fas fa-chevron-right"></i>
                     <span>patients details</span>
                 </a>
                             </li>
 
+         <li class="nav-item">
+                <a class="nav-link collapsed" href="modify_details.php" data-toggle="collapse" data-target="#collapseUtilities"
+                    aria-expanded="true" aria-controls="collapseUtilities">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>Modify Details of Patient</span>
+                </a>
+                            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading 
+            <!-- Heading
             <div class="sidebar-heading">
                 Addons
             </div>-->
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="discharge.html" data-toggle="collapse" data-target="#collapsePages"
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
                     aria-expanded="true" aria-controls="collapsePages">
-                   
+
                     <span>Discharge</span>
                 </a>
-                
+
             </li>
 
-            <!-- Nav Item - Charts 
+            <!-- Nav Item - Charts
             <li class="nav-item">
                 <a class="nav-link" href="charts.html">
                     <i class="fas fa-fw fa-chart-area"></i>
                     <span>Charts</span></a>
             </li>-->
 
-            <!-- Nav Item - Tables 
+            <!-- Nav Item - Tables
             <li class="nav-item">
                 <a class="nav-link" href="tables.html">
                     <i class="fas fa-table"></i>
@@ -113,12 +165,12 @@
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 
-            
+
 
             <!-- Sidebar Message -->
             <div class="sidebar-card">
                 <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="">
-                <a class="btn btn-success btn-sm" href="">logout</a>
+                <a class="btn btn-success btn-sm" href="logout.php">logout</a>
             </div>
 
         </ul>
@@ -185,21 +237,21 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                
+
                             </a>
                             <!-- Dropdown - Alerts -->
-                            
+
                         </li>
 
                         <!-- Nav Item - Messages -->
-                       
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?php echo htmlentities($_SESSION['userid']);?></span>
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
@@ -235,7 +287,14 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                   
+                    <h4 align="center" style="color:red; background:white;">
+                              <?php
+                                if(isset($_SESSION['successadd'])){
+                                  echo $_SESSION['successadd'];
+                                  unset($_SESSION['successadd']);
+                                }
+                                ?>
+                              </h4>
                     <!-- Content Row -->
                           <!-- DataTales Example -->
                     <div class="card shadow mb-4">
@@ -244,69 +303,35 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <script src="https://cdn.jotfor.ms/js/vendor/jquery-1.8.0.min.js?v=3.3.21851" type="text/javascript"></script>
-<script src="https://cdn.jotfor.ms/js/vendor/maskedinput.min.js?v=3.3.21851" type="text/javascript"></script>
-<script src="https://cdn.jotfor.ms/js/vendor/jquery.maskedinput.min.js?v=3.3.21851" type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/punycode/1.4.1/punycode.min.js"></script>
 <script src="https://cdn.jotfor.ms/static/prototype.forms.js" type="text/javascript"></script>
-<script src="https://cdn.jotfor.ms/static/jotform.forms.js?3.3.21851" type="text/javascript"></script>
+<script src="https://cdn.jotfor.ms/static/jotform.forms.js?3.3.21852" type="text/javascript"></script>
 <script type="text/javascript">
-   JotForm.setConditions([{"action":[{"id":"action_1605859158758","visibility":"HideMultiple","isError":false,"fields":["241"]}],"id":"1605859230449","index":"3","link":"Any","priority":"3","terms":[{"id":"term_1605859158758","field":"238","operator":"equals","value":"Negative","isError":false}],"type":"field"}]);
+   JotForm.setConditions([{"action":[{"id":"action_1605946363122","visibility":"Hide","isError":false,"field":"240"}],"id":"1605946379908","index":"0","link":"Any","priority":"0","terms":[{"id":"term_1605946363122","field":"244","operator":"equals","value":"Patient Deceased","isError":false}],"type":"field"}]);
 	JotForm.init(function(){
-
- JotForm.calendarMonths = ["January","February","March","April","May","June","July","August","September","October","November","December"];
- JotForm.calendarDays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
- JotForm.calendarOther = {"today":"Today"};
- var languageOptions = document.querySelectorAll('#langList li'); 
- for(var langIndex = 0; langIndex < languageOptions.length; langIndex++) { 
-   languageOptions[langIndex].on('click', function(e) { setTimeout(function(){ JotForm.setCalendar("242", false, {"days":{"monday":true,"tuesday":true,"wednesday":true,"thursday":true,"friday":true,"saturday":true,"sunday":true},"future":true,"past":true,"custom":false,"ranges":false,"start":"","end":""}); }, 0); });
- } 
- JotForm.setCalendar("242", false, {"days":{"monday":true,"tuesday":true,"wednesday":true,"thursday":true,"friday":true,"saturday":true,"sunday":true},"future":true,"past":true,"custom":false,"ranges":false,"start":"","end":""});
-if (window.JotForm && JotForm.accessible) $('input_247').setAttribute('tabindex',0);
-      setTimeout(function() {
-          $('input_247').hint('(###)##########');
-       }, 20);
-      setTimeout(function() {
-          $('input_225').hint('ex: myname@example.com');
-       }, 20);
+if (window.JotForm && JotForm.accessible) $('input_235').setAttribute('tabindex',0);
 if (window.JotForm && JotForm.accessible) $('input_243').setAttribute('tabindex',0);
-if (window.JotForm && JotForm.accessible) $('input_73').setAttribute('tabindex',0);
-if (window.JotForm && JotForm.accessible) $('input_248').setAttribute('tabindex',0);
       setTimeout(function() {
-          $('input_248').hint('(###)##########');
+          $('input_243').hint('(###)##########');
        }, 20);
-if (window.JotForm && JotForm.accessible) $('input_246').setAttribute('tabindex',0);
-if (window.JotForm && JotForm.accessible) $('input_237').setAttribute('tabindex',0);
-if (window.JotForm && JotForm.accessible) $('input_244').setAttribute('tabindex',0);
-if (window.JotForm && JotForm.accessible) $('input_245').setAttribute('tabindex',0);
 if (window.JotForm && JotForm.accessible) $('input_240').setAttribute('tabindex',0);
-      JotForm.setCustomHint( 'input_240', 'Please write' );
+      JotForm.setCustomHint( 'input_240', 'Please Write..' );
 	JotForm.newDefaultTheme = true;
 	JotForm.extendsNewTheme = false;
 	JotForm.newPaymentUIForNewCreatedForms = false;
 	JotForm.newPaymentUI = true;
-    /*INIT-END*/
+
 	});
 
-   JotForm.prepareCalculationsOnTheFly([null,{"name":"newPatient","qid":"1","text":"New Patient Enrollment","type":"control_head"},{"name":"submitForm","qid":"2","text":"Enroll","type":"control_button"},{"name":"name","qid":"3","text":"Name","type":"control_fullname"},{"name":"address4","qid":"4","text":"Address:","type":"control_address"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"healthInsurance","qid":"43","text":"Health Insurance?","type":"control_radio"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"relationship","qid":"73","text":"Relationship","type":"control_textbox"},null,{"name":"clickTo75","qid":"75","text":"","type":"control_text"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"clickTo108","qid":"108","text":"","type":"control_text"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"email","qid":"225","subLabel":"example@example.com","text":"E-mail","type":"control_email"},null,null,null,null,null,{"name":"sex","qid":"231","text":"Sex","type":"control_dropdown"},{"name":"maritalStatus232","qid":"232","text":"Marital Status","type":"control_dropdown"},{"name":"clickTo233","qid":"233","text":"In case of emergency","type":"control_text"},{"name":"lthrgt","qid":"234","text":"","type":"control_text"},null,null,{"description":"","name":"panNumber","qid":"237","subLabel":"","text":"PAN Number","type":"control_textbox"},null,null,{"description":"","name":"symptoms","qid":"240","subLabel":"","text":"Symptoms","type":"control_textarea"},{"description":"","name":"severity","qid":"241","text":"Severity","type":"control_radio"},{"description":"","name":"dateOf","qid":"242","text":"Date of Birth","type":"control_datetime"},{"description":"","name":"fullName","qid":"243","subLabel":"","text":"Full Name","type":"control_textbox"},{"description":"","name":"previousIllness","qid":"244","subLabel":"","text":"Previous illness (if any or N\u002FA)","type":"control_textbox"},{"description":"","name":"travelHistory","qid":"245","subLabel":"Please mention all travel history since outbreak","text":"Travel History","type":"control_textbox"},{"description":"","name":"aadharNumber","qid":"246","subLabel":"","text":"Aadhar Number","type":"control_textbox"},{"description":"","name":"contactNumber","qid":"247","subLabel":"","text":"Contact Number","type":"control_textbox"},{"description":"","name":"contactNumber248","qid":"248","subLabel":"","text":"Contact Number","type":"control_textbox"}]);
+   JotForm.prepareCalculationsOnTheFly([null,{"name":"Patient1","qid":"1","text":" Patient Discharge Form","type":"control_head"},{"name":"submitForm","qid":"2","text":"Enroll","type":"control_button"},{"description":"","name":"name","qid":"3","text":"Name","type":"control_fullname"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"description":"","name":"patientsId","qid":"235","subLabel":"","text":"Patient's ID","type":"control_textbox"},null,null,null,null,{"description":"","name":"dischargePlan","qid":"240","subLabel":"","text":"Discharge Plan and follow up care:","type":"control_textarea"},{"description":"","name":"ventilatorUsed","qid":"241","text":"Ventilator used","type":"control_radio"},{"description":"","name":"attendingPhysician","qid":"242","subLabel":"","text":"Attending Physician","type":"control_dropdown"},{"description":"","name":"contactNumber243","qid":"243","subLabel":"","text":"Contact Number","type":"control_textbox"},{"description":"","name":"reasonOf","qid":"244","text":"Reason of Discharge","type":"control_radio"}]);
    setTimeout(function() {
-JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New Patient Enrollment","type":"control_head"},{"name":"submitForm","qid":"2","text":"Enroll","type":"control_button"},{"name":"name","qid":"3","text":"Name","type":"control_fullname"},{"name":"address4","qid":"4","text":"Address:","type":"control_address"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"healthInsurance","qid":"43","text":"Health Insurance?","type":"control_radio"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"relationship","qid":"73","text":"Relationship","type":"control_textbox"},null,{"name":"clickTo75","qid":"75","text":"","type":"control_text"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"clickTo108","qid":"108","text":"","type":"control_text"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"name":"email","qid":"225","subLabel":"example@example.com","text":"E-mail","type":"control_email"},null,null,null,null,null,{"name":"sex","qid":"231","text":"Sex","type":"control_dropdown"},{"name":"maritalStatus232","qid":"232","text":"Marital Status","type":"control_dropdown"},{"name":"clickTo233","qid":"233","text":"In case of emergency","type":"control_text"},{"name":"lthrgt","qid":"234","text":"","type":"control_text"},null,null,{"description":"","name":"panNumber","qid":"237","subLabel":"","text":"PAN Number","type":"control_textbox"},null,null,{"description":"","name":"symptoms","qid":"240","subLabel":"","text":"Symptoms","type":"control_textarea"},{"description":"","name":"severity","qid":"241","text":"Severity","type":"control_radio"},{"description":"","name":"dateOf","qid":"242","text":"Date of Birth","type":"control_datetime"},{"description":"","name":"fullName","qid":"243","subLabel":"","text":"Full Name","type":"control_textbox"},{"description":"","name":"previousIllness","qid":"244","subLabel":"","text":"Previous illness (if any or N\u002FA)","type":"control_textbox"},{"description":"","name":"travelHistory","qid":"245","subLabel":"Please mention all travel history since outbreak","text":"Travel History","type":"control_textbox"},{"description":"","name":"aadharNumber","qid":"246","subLabel":"","text":"Aadhar Number","type":"control_textbox"},{"description":"","name":"contactNumber","qid":"247","subLabel":"","text":"Contact Number","type":"control_textbox"},{"description":"","name":"contactNumber248","qid":"248","subLabel":"","text":"Contact Number","type":"control_textbox"}]);}, 20); 
+JotForm.paymentExtrasOnTheFly([null,{"name":"Patient1","qid":"1","text":" Patient Discharge Form","type":"control_head"},{"name":"submitForm","qid":"2","text":"Enroll","type":"control_button"},{"description":"","name":"name","qid":"3","text":"Name","type":"control_fullname"},null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,{"description":"","name":"patientsId","qid":"235","subLabel":"","text":"Patient's ID","type":"control_textbox"},null,null,null,null,{"description":"","name":"dischargePlan","qid":"240","subLabel":"","text":"Discharge Plan and follow up care:","type":"control_textarea"},{"description":"","name":"ventilatorUsed","qid":"241","text":"Ventilator used","type":"control_radio"},{"description":"","name":"attendingPhysician","qid":"242","subLabel":"","text":"Attending Physician","type":"control_dropdown"},{"description":"","name":"contactNumber243","qid":"243","subLabel":"","text":"Contact Number","type":"control_textbox"},{"description":"","name":"reasonOf","qid":"244","text":"Reason of Discharge","type":"control_radio"}]);}, 20);
 </script>
-<link type="text/css" media="print" rel="stylesheet" href="https://cdn.jotfor.ms/css/printForm.css?3.3.21851" />
+<link type="text/css" media="print" rel="stylesheet" href="https://cdn.jotfor.ms/css/printForm.css?3.3.21852" />
 <link type="text/css" rel="stylesheet" href="https://cdn.jotfor.ms/themes/CSS/5e6b428acc8c4e222d1beb91.css?themeRevisionID=5f30e2a790832f3e96009402"/>
-<link type="text/css" rel="stylesheet" href="https://cdn.jotfor.ms/css/styles/payment/payment_styles.css?3.3.21851" />
-<link type="text/css" rel="stylesheet" href="https://cdn.jotfor.ms/css/styles/payment/payment_feature.css?3.3.21851" />
+<link type="text/css" rel="stylesheet" href="https://cdn.jotfor.ms/css/styles/payment/payment_styles.css?3.3.21852" />
+<link type="text/css" rel="stylesheet" href="https://cdn.jotfor.ms/css/styles/payment/payment_feature.css?3.3.21852" />
 <style type="text/css" id="form-designer-style">
-   
 
-  
-  
-  
-  
-  
-  
-  
-  
   .form-header-group .form-header,
   .appointmentCalendarContainer .monthYearPicker .pickerItem select,
   .appointmentCalendarContainer .currentDate,
@@ -660,7 +685,7 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
     border-color: #12458D;
   }
 
-  
+
     .form-all {
       font-family: Inter, sans-serif;
     }
@@ -680,51 +705,51 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
     .form-label {
       font-family: Inter, sans-serif;
     }
-  
+
     .form-label.form-label-auto {
-      
+
     display: inline-block;
     float: left;
     text-align: left;
-  
+
     }
-  
+
     .form-line {
       margin-top: 12px 36px 12px 36px px;
       margin-bottom: 12px 36px 12px 36px px;
     }
-  
+
     .form-all {
       max-width: 752px;
       width: 100%;
     }
-  
+
     .form-label.form-label-left,
     .form-label.form-label-right,
     .form-label.form-label-left.form-label-auto,
     .form-label.form-label-right.form-label-auto {
       width: 230px;
     }
-  
+
     .form-all {
-      font-size: 18px
+      font-size: 16px
     }
     .form-all .qq-upload-button,
     .form-all .qq-upload-button,
     .form-all .form-submit-button,
     .form-all .form-submit-reset,
     .form-all .form-submit-print {
-      font-size: 18px
+      font-size: 16px
     }
     .form-all .form-pagebreak-back-container,
     .form-all .form-pagebreak-next-container {
-      font-size: 18px
+      font-size: 16px
     }
-  
+
     .supernova .form-all, .form-all {
       background-color: #E4EFFF;
     }
-  
+
     .form-all {
       color: #12458D;
     }
@@ -745,14 +770,14 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
     .form-sub-label {
       color: #2c5fa7;
     }
-  
+
     .supernova {
-      background-color: #ebeef3;
+      background-color: #ffffff;
     }
     .supernova body {
       background: transparent;
     }
-  
+
     .form-textbox,
     .form-textarea,
     .form-dropdown,
@@ -762,36 +787,36 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
     .form-spinner input {
       background-color: #FFFFFF;
     }
-  
+
     .supernova {
       background-image: none;
     }
     #stage {
       background-image: none;
     }
-  
+
     .form-all {
       background-image: none;
     }
-  
+
   .ie-8 .form-all:before { display: none; }
   .ie-8 {
     margin-top: auto;
     margin-top: initial;
   }
-  
-.form-label.form-label-auto {
-        
+
+  .form-label.form-label-auto {
+
         display: inline-block;
         float: left;
         text-align: left;
-      
+
       }
-    
+
 </style>
 
-<form class="jotform-form" >
-  <input type="hidden" name="formID" value="203241150155440" />
+<form class="jotform-form" method="post">
+  <input type="hidden" name="formID" value="203242994319459" />
   <input type="hidden" id="JWTContainer" value="" />
   <input type="hidden" id="cardinalOrderNumber" value="" />
   <div role="main" class="form-all">
@@ -800,12 +825,23 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
         <div class="form-header-group  header-large">
           <div class="header-text httal htvam">
             <h1 id="header_1" class="form-header" data-component="header">
-              New Patient Enrollment
+              Patient Discharge Form
             </h1>
           </div>
         </div>
       </li>
-      <li class="form-line jf-required" data-type="control_fullname" id="id_3">
+      <li class="form-line jf-required" data-type="control_textbox" id="id_235">
+        <label class="form-label form-label-left form-label-auto" id="label_235" for="input_235">
+          Patient's ID
+          <span class="form-required">
+            *
+          </span>
+        </label>
+        <div id="cid_235" class="form-input jf-required" data-layout="half">
+          <input type="text" id="input_235" name="q235_patientsId" data-type="input-textbox" class="form-textbox validate[required]" style="width:310px" size="310" value="" data-component="textbox" aria-labelledby="label_235" required="" />
+        </div>
+      </li>
+      <li class="form-line jf-required" data-type="control_fullname" id="id_3" data-compound-hint=",">
         <label class="form-label form-label-left" id="label_3" for="first_3">
           Name
           <span class="form-required">
@@ -825,267 +861,44 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
           </div>
         </div>
       </li>
-      <li class="form-line jf-required" data-type="control_datetime" id="id_242">
-        <label class="form-label form-label-left form-label-auto" id="label_242" for="lite_mode_242">
-          Date of Birth
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_242" class="form-input jf-required" data-layout="half">
-          <div data-wrapper-react="true">
-            <div style="display:none">
-              <span class="form-sub-label-container" style="vertical-align:top">
-                <input type="tel" class="form-textbox validate[required, limitDate]" id="month_242" name="q242_dateOf[month]" size="2" data-maxlength="2" data-age="" maxLength="2" value="" required="" autoComplete="off" aria-labelledby="label_242 sublabel_242_month" />
-                <span class="date-separate" aria-hidden="true">
-                   -
-                </span>
-                <label class="form-sub-label" for="month_242" id="sublabel_242_month" style="min-height:13px" aria-hidden="false"> Month </label>
-              </span>
-              <span class="form-sub-label-container" style="vertical-align:top">
-                <input type="tel" class="form-textbox validate[required, limitDate]" id="day_242" name="q242_dateOf[day]" size="2" data-maxlength="2" data-age="" maxLength="2" value="" required="" autoComplete="off" aria-labelledby="label_242 sublabel_242_day" />
-                <span class="date-separate" aria-hidden="true">
-                   -
-                </span>
-                <label class="form-sub-label" for="day_242" id="sublabel_242_day" style="min-height:13px" aria-hidden="false"> Day </label>
-              </span>
-              <span class="form-sub-label-container" style="vertical-align:top">
-                <input type="tel" class="form-textbox validate[required, limitDate]" id="year_242" name="q242_dateOf[year]" size="4" data-maxlength="4" data-age="" maxLength="4" value="" required="" autoComplete="off" aria-labelledby="label_242 sublabel_242_year" />
-                <label class="form-sub-label" for="year_242" id="sublabel_242_year" style="min-height:13px" aria-hidden="false"> Year </label>
-              </span>
-            </div>
-            <span class="form-sub-label-container" style="vertical-align:top">
-              <input type="text" class="form-textbox validate[required, limitDate, validateLiteDate]" id="lite_mode_242" size="12" data-maxlength="12" maxLength="12" data-age="" value="" required="" data-format="mmddyyyy" data-seperator="-" placeholder="MM-DD-YYYY" autoComplete="off" aria-labelledby="label_242 sublabel_242_litemode" />
-              <img class=" newDefaultTheme-dateIcon icon-liteMode" alt="Pick a Date" id="input_242_pick" src="https://cdn.jotfor.ms/images/calendar.png" data-component="datetime" aria-hidden="true" data-allow-time="No" data-version="v2" />
-              <label class="form-sub-label" for="lite_mode_242" id="sublabel_242_litemode" style="min-height:13px" aria-hidden="false"> Date </label>
-            </span>
-          </div>
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_dropdown" id="id_231">
-        <label class="form-label form-label-left" id="label_231" for="input_231">
-          Sex
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_231" class="form-input jf-required" data-layout="half">
-          <select class="form-dropdown validate[required]" id="input_231" name="q231_sex" style="width:310px" data-component="dropdown" required="" aria-labelledby="label_231">
-            <option value=""> Please Select </option>
-            <option value="Male"> Male </option>
-            <option value="Female"> Female </option>
-            <option value="N/A"> N/A </option>
-          </select>
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_textbox" id="id_247">
-        <label class="form-label form-label-left form-label-auto" id="label_247" for="input_247">
-          Contact Number
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_247" class="form-input jf-required" data-layout="half">
-          <input type="text" id="input_247" name="q247_contactNumber" data-type="input-textbox" class="form-textbox validate[required, Fill Mask]" style="width:310px" size="310" value="" placeholder="(###)##########" data-component="textbox" aria-labelledby="label_247" required="" />
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_email" id="id_225">
-        <label class="form-label form-label-left" id="label_225" for="input_225">
-          E-mail
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_225" class="form-input jf-required" data-layout="half">
-          <span class="form-sub-label-container" style="vertical-align:top">
-            <input type="email" id="input_225" name="q225_email" class="form-textbox validate[required, Email]" style="width:310px" size="310" value="" placeholder="ex: myname@example.com" data-component="email" aria-labelledby="label_225 sublabel_input_225" required="" />
-            <label class="form-sub-label" for="input_225" id="sublabel_input_225" style="min-height:13px" aria-hidden="false"> example@example.com </label>
-          </span>
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_address" id="id_4">
-        <label class="form-label form-label-left" id="label_4" for="input_4_addr_line1">
-          Address:
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_4" class="form-input jf-required" data-layout="full">
-          <div summary="" class="form-address-table jsTest-addressField">
-            <div class="form-address-line-wrapper jsTest-address-line-wrapperField">
-              <span class="form-address-line form-address-street-line jsTest-address-lineField">
-                <span class="form-sub-label-container" style="vertical-align:top">
-                  <input type="text" id="input_4_addr_line1" name="q4_address4[addr_line1]" class="form-textbox validate[required] form-address-line" value="" data-component="address_line_1" aria-labelledby="label_4 sublabel_4_addr_line1" required="" />
-                  <label class="form-sub-label" for="input_4_addr_line1" id="sublabel_4_addr_line1" style="min-height:13px" aria-hidden="false"> Street Address </label>
-                </span>
-              </span>
-            </div>
-            <div class="form-address-line-wrapper jsTest-address-line-wrapperField">
-              <span class="form-address-line form-address-street-line jsTest-address-lineField">
-                <span class="form-sub-label-container" style="vertical-align:top">
-                  <input type="text" id="input_4_addr_line2" name="q4_address4[addr_line2]" class="form-textbox form-address-line" value="" data-component="address_line_2" aria-labelledby="label_4 sublabel_4_addr_line2" />
-                  <label class="form-sub-label" for="input_4_addr_line2" id="sublabel_4_addr_line2" style="min-height:13px" aria-hidden="false"> Street Address Line 2 </label>
-                </span>
-              </span>
-            </div>
-            <div class="form-address-line-wrapper jsTest-address-line-wrapperField">
-              <span class="form-address-line form-address-city-line jsTest-address-lineField ">
-                <span class="form-sub-label-container" style="vertical-align:top">
-                  <input type="text" id="input_4_city" name="q4_address4[city]" class="form-textbox validate[required] form-address-city" value="" data-component="city" aria-labelledby="label_4 sublabel_4_city" required="" />
-                  <label class="form-sub-label" for="input_4_city" id="sublabel_4_city" style="min-height:13px" aria-hidden="false"> City </label>
-                </span>
-              </span>
-              <span class="form-address-line form-address-state-line jsTest-address-lineField ">
-                <span class="form-sub-label-container" style="vertical-align:top">
-                  <input type="text" id="input_4_state" name="q4_address4[state]" class="form-textbox validate[required] form-address-state" value="" data-component="state" aria-labelledby="label_4 sublabel_4_state" required="" />
-                  <label class="form-sub-label" for="input_4_state" id="sublabel_4_state" style="min-height:13px" aria-hidden="false"> State / Province </label>
-                </span>
-              </span>
-            </div>
-            <div class="form-address-line-wrapper jsTest-address-line-wrapperField">
-              <span class="form-address-line form-address-zip-line jsTest-address-lineField ">
-                <span class="form-sub-label-container" style="vertical-align:top">
-                  <input type="text" id="input_4_postal" name="q4_address4[postal]" class="form-textbox validate[required] form-address-postal" value="" data-component="zip" aria-labelledby="label_4 sublabel_4_postal" required="" />
-                  <label class="form-sub-label" for="input_4_postal" id="sublabel_4_postal" style="min-height:13px" aria-hidden="false"> Postal / Zip Code </label>
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </li>
-      <li class="form-line" data-type="control_dropdown" id="id_232">
-        <label class="form-label form-label-left" id="label_232" for="input_232"> Marital Status </label>
-        <div id="cid_232" class="form-input" data-layout="half">
-          <select class="form-dropdown" id="input_232" name="q232_maritalStatus232" style="width:310px" data-component="dropdown" aria-labelledby="label_232">
-            <option value=""> Please Select </option>
-            <option value="Single"> Single </option>
-            <option value="Married"> Married </option>
-            <option value="Divorced"> Divorced </option>
-            <option value="Legally separated"> Legally separated </option>
-            <option value="Widowed"> Widowed </option>
-          </select>
-        </div>
-      </li>
-      <li class="form-line" data-type="control_text" id="id_108">
-        <div id="cid_108" class="form-input-wide" data-layout="full">
-          <div id="text_108" class="form-html" data-component="text">
-            <hr />
-          </div>
-        </div>
-      </li>
-      <li class="form-line" data-type="control_text" id="id_233">
-        <div id="cid_233" class="form-input-wide" data-layout="full">
-          <div id="text_233" class="form-html" data-component="text">
-            <p>In case of emergency</p>
-          </div>
-        </div>
-      </li>
       <li class="form-line jf-required" data-type="control_textbox" id="id_243">
         <label class="form-label form-label-left form-label-auto" id="label_243" for="input_243">
-          Full Name
+          Contact Number
           <span class="form-required">
             *
           </span>
         </label>
         <div id="cid_243" class="form-input jf-required" data-layout="half">
-          <input type="text" id="input_243" name="q243_fullName" data-type="input-textbox" class="form-textbox validate[required]" style="width:310px" size="310" value="" data-component="textbox" aria-labelledby="label_243" required="" />
+          <input type="text" id="input_243" name="q243_contactNumber243" data-type="input-textbox" class="form-textbox validate[required]" style="width:310px" size="310" value="" placeholder="(###)##########" data-component="textbox" aria-labelledby="label_243" required="" />
         </div>
       </li>
-      <li class="form-line" data-type="control_textbox" id="id_73">
-        <label class="form-label form-label-left" id="label_73" for="input_73"> Relationship </label>
-        <div id="cid_73" class="form-input" data-layout="half">
-          <input type="text" id="input_73" name="q73_relationship" data-type="input-textbox" class="form-textbox" style="width:310px" size="310" value="" placeholder=" " data-component="textbox" aria-labelledby="label_73" />
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_textbox" id="id_248">
-        <label class="form-label form-label-left form-label-auto" id="label_248" for="input_248">
-          Contact Number
+      <li class="form-line jf-required" data-type="control_dropdown" id="id_242">
+        <label class="form-label form-label-left form-label-auto" id="label_242" for="input_242">
+          Attending Physician
           <span class="form-required">
             *
           </span>
         </label>
-        <div id="cid_248" class="form-input jf-required" data-layout="half">
-          <input type="text" id="input_248" name="q248_contactNumber248" data-type="input-textbox" class="form-textbox validate[required, Fill Mask]" style="width:310px" size="310" value="" placeholder="(###)##########" data-component="textbox" aria-labelledby="label_248" required="" />
+        <div id="cid_242" class="form-input jf-required" data-layout="half">
+          <select class="form-dropdown validate[required]" id="input_242" name="q242_attendingPhysician" style="width:310px" data-component="dropdown" required="" aria-labelledby="label_242">
+            <option value=""> Please Select </option>
+            <?php
+
+                 $stmte = $pdo->query('SELECT * FROM staffdet WHERE desg=1');
+                 $rowe = $stmte->fetchAll(PDO::FETCH_ASSOC);
+                 foreach ($rowe as $rowse) {
+                   $rce=$rowse['name'];
+                   echo
+                   '<option value='.$rce.'>'.$rce.'</option>';
+
+                 }
+            ?>
+          </select>
         </div>
       </li>
-      <li class="form-line" data-type="control_text" id="id_234">
-        <div id="cid_234" class="form-input-wide" data-layout="full">
-          <div id="text_234" class="form-html" data-component="text">
-            <hr />
-          </div>
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_textbox" id="id_246">
-        <label class="form-label form-label-left form-label-auto" id="label_246" for="input_246">
-          Aadhar Number
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_246" class="form-input jf-required" data-layout="half">
-          <input type="text" id="input_246" name="q246_aadharNumber" data-type="input-textbox" class="form-textbox validate[required]" style="width:310px" size="310" value="" maxLength="12" data-component="textbox" aria-labelledby="label_246" required="" />
-        </div>
-      </li>
-      <li class="form-line" data-type="control_textbox" id="id_237">
-        <label class="form-label form-label-left form-label-auto" id="label_237" for="input_237"> PAN Number </label>
-        <div id="cid_237" class="form-input" data-layout="half">
-          <input type="text" id="input_237" name="q237_panNumber" data-type="input-textbox" class="form-textbox" style="width:310px" size="310" value="" maxLength="10" data-component="textbox" aria-labelledby="label_237" />
-        </div>
-      </li>
-      <li class="form-line" data-type="control_text" id="id_75">
-        <div id="cid_75" class="form-input-wide" data-layout="full">
-          <div id="text_75" class="form-html" data-component="text">
-            <hr />
-          </div>
-        </div>
-      </li>
-      <li class="form-line" data-type="control_radio" id="id_43">
-        <label class="form-label form-label-left" id="label_43" for="input_43"> Health Insurance? </label>
-        <div id="cid_43" class="form-input" data-layout="full">
-          <div class="form-single-column" role="group" aria-labelledby="label_43" data-component="radio">
-            <span class="form-radio-item" style="clear:left">
-              <span class="dragger-item">
-              </span>
-              <input type="radio" class="form-radio" id="input_43_0" name="q43_healthInsurance" value="Yes" />
-              <label id="label_input_43_0" for="input_43_0"> Yes </label>
-            </span>
-            <span class="form-radio-item" style="clear:left">
-              <span class="dragger-item">
-              </span>
-              <input type="radio" class="form-radio" id="input_43_1" name="q43_healthInsurance" value="No" />
-              <label id="label_input_43_1" for="input_43_1"> No </label>
-            </span>
-          </div>
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_textbox" id="id_244">
-        <label class="form-label form-label-left form-label-auto" id="label_244" for="input_244">
-          Previous illness (if any or N/A)
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_244" class="form-input jf-required" data-layout="half">
-          <input type="text" id="input_244" name="q244_previousIllness" data-type="input-textbox" class="form-textbox validate[required]" style="width:310px" size="310" value="" data-component="textbox" aria-labelledby="label_244" required="" />
-        </div>
-      </li>
-      <li class="form-line jf-required" data-type="control_textbox" id="id_245">
-        <label class="form-label form-label-left form-label-auto" id="label_245" for="input_245">
-          Travel History
-          <span class="form-required">
-            *
-          </span>
-        </label>
-        <div id="cid_245" class="form-input jf-required" data-layout="half">
-          <span class="form-sub-label-container" style="vertical-align:top">
-            <input type="text" id="input_245" name="q245_travelHistory" data-type="input-textbox" class="form-textbox validate[required]" style="width:310px" size="310" value="" data-component="textbox" aria-labelledby="label_245 sublabel_input_245" required="" />
-            <label class="form-sub-label" for="input_245" id="sublabel_input_245" style="min-height:13px" aria-hidden="false"> Please mention all travel history since outbreak </label>
-          </span>
-        </div>
-      </li>
-      <li class="form-line jf-required form-field-hidden" style="display:none;" data-type="control_radio" id="id_241">
+      <li class="form-line jf-required" data-type="control_radio" id="id_241">
         <label class="form-label form-label-left form-label-auto" id="label_241" for="input_241">
-          Severity
+          Ventilator used
           <span class="form-required">
             *
           </span>
@@ -1095,47 +908,58 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
             <span class="form-radio-item" style="clear:left">
               <span class="dragger-item">
               </span>
-              <input type="radio" class="form-radio validate[required]" id="input_241_0" name="q241_severity" value="1" required="" />
-              <label id="label_input_241_0" for="input_241_0"> 1 </label>
+              <input type="radio" class="form-radio validate[required]" id="input_241_0" name="q241_ventilatorUsed" value="Yes" required="" />
+              <label id="label_input_241_0" for="input_241_0"> Yes </label>
             </span>
             <span class="form-radio-item" style="clear:left">
               <span class="dragger-item">
               </span>
-              <input type="radio" class="form-radio validate[required]" id="input_241_1" name="q241_severity" value="2" required="" />
-              <label id="label_input_241_1" for="input_241_1"> 2 </label>
-            </span>
-            <span class="form-radio-item" style="clear:left">
-              <span class="dragger-item">
-              </span>
-              <input type="radio" class="form-radio validate[required]" id="input_241_2" name="q241_severity" value="3" required="" />
-              <label id="label_input_241_2" for="input_241_2"> 3 </label>
-            </span>
-            <span class="form-radio-item" style="clear:left">
-              <span class="dragger-item">
-              </span>
-              <input type="radio" class="form-radio validate[required]" id="input_241_3" name="q241_severity" value="4" required="" />
-              <label id="label_input_241_3" for="input_241_3"> 4 </label>
-            </span>
-            <span class="form-radio-item" style="clear:left">
-              <span class="dragger-item">
-              </span>
-              <input type="radio" class="form-radio validate[required]" id="input_241_4" name="q241_severity" value="5" required="" />
-              <label id="label_input_241_4" for="input_241_4"> 5 </label>
+              <input type="radio" class="form-radio validate[required]" id="input_241_1" name="q241_ventilatorUsed" value="No" required="" />
+              <label id="label_input_241_1" for="input_241_1"> No </label>
             </span>
           </div>
         </div>
       </li>
-      <li class="form-line" data-type="control_textarea" id="id_240">
-        <label class="form-label form-label-left form-label-auto" id="label_240" for="input_240"> Symptoms </label>
-        <div id="cid_240" class="form-input" data-layout="full">
-          <textarea id="input_240" class="form-textarea" name="q240_symptoms" style="width:648px;height:163px" data-component="textarea" aria-labelledby="label_240"></textarea>
+      <li class="form-line jf-required" data-type="control_radio" id="id_244">
+        <label class="form-label form-label-left form-label-auto" id="label_244" for="input_244">
+          Reason of Discharge
+          <span class="form-required">
+            *
+          </span>
+        </label>
+        <div id="cid_244" class="form-input jf-required" data-layout="full">
+          <div class="form-single-column" role="group" aria-labelledby="label_244" data-component="radio">
+            <span class="form-radio-item" style="clear:left">
+              <span class="dragger-item">
+              </span>
+              <input type="radio" class="form-radio validate[required]" id="input_244_0" name="q244_reasonOf" value="recovered" required="" />
+              <label id="label_input_244_0" for="input_244_0"> Patient Recovered </label>
+            </span>
+            <span class="form-radio-item" style="clear:left">
+              <span class="dragger-item">
+              </span>
+              <input type="radio" class="form-radio validate[required]" id="input_244_1" name="q244_reasonOf" value="deceased" required="" />
+              <label id="label_input_244_1" for="input_244_1"> Patient Deceased </label>
+            </span>
+          </div>
+        </div>
+      </li>
+      <li class="form-line jf-required form-field-hidden" style="display:none;" data-type="control_textarea" id="id_240">
+        <label class="form-label form-label-left form-label-auto" id="label_240" for="input_240">
+          Discharge Plan and follow up care:
+          <span class="form-required">
+            *
+          </span>
+        </label>
+        <div id="cid_240" class="form-input jf-required" data-layout="full">
+          <textarea id="input_240" class="form-textarea validate[required]" name="q240_dischargePlan" style="width:648px;height:163px" data-component="textarea" required="" aria-labelledby="label_240"></textarea>
         </div>
       </li>
       <li class="form-line" data-type="control_button" id="id_2">
         <div id="cid_2" class="form-input-wide" data-layout="full">
           <div data-align="auto" class="form-buttons-wrapper form-buttons-auto   jsTest-button-wrapperField">
-            <button id="input_2" type="submit" class="form-submit-button submit-button jf-form-buttons jsTest-submitField" data-component="button" data-content="">
-              Enroll
+            <button id="input_2" type="submit" name="discharge" class="form-submit-button submit-button jf-form-buttons jsTest-submitField" data-component="button" data-content="">
+              Discharge
             </button>
           </div>
         </div>
@@ -1146,13 +970,10 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
       </li>
     </ul>
   </div>
-  <script>
-  JotForm.showJotFormPowered = "new_footer";
-  </script>
- 
+
 </form>
-<script src="https://cdn.jotfor.ms//js/vendor/smoothscroll.min.js?v=3.3.21851"></script>
-<script src="https://cdn.jotfor.ms//js/errorNavigation.js?v=3.3.21851"></script>
+<script src="https://cdn.jotfor.ms//js/vendor/smoothscroll.min.js?v=3.3.21852"></script>
+<script src="https://cdn.jotfor.ms//js/errorNavigation.js?v=3.3.21852"></script>
 
                                                            </div>
                         </div>
@@ -1200,7 +1021,7 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="login.php">Logout</a>
                 </div>
             </div>
         </div>
@@ -1226,7 +1047,3 @@ JotForm.paymentExtrasOnTheFly([null,{"name":"newPatient","qid":"1","text":"New P
 </body>
 
 </html>
-
-
-
-

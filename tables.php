@@ -1,5 +1,71 @@
+<?php
+
+	session_start();
+
+	require_once "pdo.php";
+
+	$patients = $pdo->query("SELECT * FROM patients");
+
+	if ( isset($_POST['clear']) )
+	{
+		$patients = $pdo->prepare("
+			SELECT * FROM patients
+		");
+		$patients->execute();
+	}
+
+	elseif (isset($_POST['fid']) || isset($_POST['ffn']) || isset($_POST['fln']) || isset($_POST['fstat']) ||
+			isset($_POST['sorb']) || isset($_POST['sor']))
+	{
+		$fid = htmlentities($_POST['fid']);
+		$ffn = htmlentities($_POST['ffn']);
+		$fln = htmlentities($_POST['fln']);
+		$fstat = htmlentities($_POST['fstat']);
+		$sorb = htmlentities($_POST['sorb']);
+		$sor = htmlentities($_POST['sor']);
+
+		if (strlen($_POST['fid']) > 0 || strlen($_POST['ffn']) > 0 || strlen($_POST['fln']) > 0 || strlen($_POST['fstat']) > 0)
+		{
+			echo $fid;
+
+			$patients = $pdo->prepare("
+				SELECT * FROM patients
+				WHERE  UserIdP = :fid or FName = :ffn or LName = :fln or status = :fstat
+				ORDER BY :sorb :sor
+			");
 
 
+			$patients->execute([
+				':fid' => $fid,
+				':ffn' => $ffn,
+				':fln' => $fln,
+				':fstat' => $fstat,
+				':sorb' => $sorb,
+				':sor' => $sor,
+			]);
+		}
+
+		else
+		{
+			$patients = $pdo->prepare("
+				SELECT * FROM patients
+				ORDER BY :sorb :sor
+			");
+
+			$patients->execute([
+				':sorb' => $sorb,
+				':sor' => $sor,
+			]);
+		}
+	}
+
+
+	while ( $row = $patients->fetch(PDO::FETCH_OBJ) )
+	{
+		$pats[] = $row;
+	}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -44,59 +110,83 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="dashboard.php">
                     <i class="fas fa-tachometer-alt"></i>
-                    <span>Add Hospital Staff</span></a>
+                    <span>STATISTICS</span></a>
             </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            
+
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="delete.html" data-toggle="collapse" data-target="#collapseTwo"
+                <a class="nav-link collapsed" href="add_patient.php" data-toggle="collapse" data-target="#collapseTwo"
                     aria-expanded="true" aria-controls="collapseTwo">
-                    
-                    <span>Delete Hospital Staff</span>
+
+                    <span>Add patient</span>
                 </a>
-                
+            </li>
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="patdet.html" data-toggle="collapse" data-target="#collapseUtilities"
+                <a class="nav-link collapsed" href="tables.php" data-toggle="collapse" data-target="#collapseUtilities"
                     aria-expanded="true" aria-controls="collapseUtilities">
                     <i class="fas fa-chevron-right"></i>
-                    <span>patients details</span>
+                    <span>Patients Details</span>
                 </a>
-                            </li>
-              <li class="nav-item">
-                <a class="nav-link collapsed" href="staff.html" data-toggle="collapse" data-target="#collapseUtilities"
+            </li>
+
+			<li class="nav-item">
+                <a class="nav-link collapsed" href="modify_details.php" data-toggle="collapse" data-target="#collapseUtilities"
                     aria-expanded="true" aria-controls="collapseUtilities">
                     <i class="fas fa-chevron-right"></i>
-                    <span>staff details</span>
+                    <span>Modify Details of Patient</span>
                 </a>
-                            </li>
+            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
 
+            <!-- Heading
+            <div class="sidebar-heading">
+                Addons
+            </div>-->
+
             <!-- Nav Item - Pages Collapse Menu -->
-           
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="discharge.php" data-toggle="collapse" data-target="#collapsePages"
+                    aria-expanded="true" aria-controls="collapsePages">
 
+                    <span>Discharge</span>
+                </a>
 
-           
+            </li>
+
+            <!-- Nav Item - Charts
+            <li class="nav-item">
+                <a class="nav-link" href="charts.html">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Charts</span></a>
+            </li>-->
+
+            <!-- Nav Item - Tables
+            <li class="nav-item">
+                <a class="nav-link" href="tables.html">
+                    <i class="fas fa-table"></i>
+                    <span>Tables</span></a>
+            </li>-->
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 
-            
+
 
             <!-- Sidebar Message -->
             <div class="sidebar-card">
                 <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="">
-                <a class="btn btn-success btn-sm" href="login.html">logout</a>
+                <a class="btn btn-success btn-sm" href="logout.php">logout</a>
             </div>
 
         </ul>
@@ -163,41 +253,17 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                
+
                             </a>
                             <!-- Dropdown - Alerts -->
-                            
+
                         </li>
 
                         <!-- Nav Item - Messages -->
-                       
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
-                        <!-- Nav Item - User Information -->
-                        <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
-                            </a>
-                            <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                
-                        </li>
+
 
                     </ul>
 
@@ -205,179 +271,165 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                <div class="container-fluid">
 
-                    
 
+					<!--Filter section-->
+					<div class="card shadow mb-4">
+                        <div class="card-header py-3">
+							<h6 class="m-0 font-weight-bold text-primary">Filter</h6>
+                        </div>
+                        <div class="card-body">
+							<form method="post">
+								<style>
+									table {
+										border-collapse: collapse;
+										width: 100%;
+									}
+
+									th {
+										padding: 8px;
+										text-align: center;
+									}
+
+									td {
+										text-align: center;
+									}
+								</style>
+								<table>
+									<tr>
+										<th>Patient ID</th>
+										<th>Patient's First Name</th>
+										<th>Patient's Last Name</th>
+										<th>Status</th>
+									</tr>
+									<tr>
+										<td><input class="form-textbox" type="text" id="fid" name="fid" placeholder="Enter ID"></td>
+										<td><input class="form-textbox" type="text" id="ffn" name="ffn" placeholder="Enter First Name"></td>
+										<td><input class="form-textbox" type="text" id="fln" name="fln" placeholder="Enter Last Name"></td>
+										<td>
+											<select class="form-dropdown" id="fstat" name="fstat">
+												<option value=""> Please Select </option>
+												<option value="active"> Active </option>
+												<option value="recovered"> Recovered </option>
+												<option value="deceased"> Deceased </option>
+											</select>
+										</td>
+									</tr>
+									<tr>
+										<th></th>
+										<th>Sort By</th>
+										<th>Sort</th>
+										<th></th>
+									</tr>
+									<tr>
+										<td></td>
+										<td>
+											<select class="form-dropdown" id="sorb" name="sorb">
+												<option value="UserIdP"> ID </option>
+												<option value="FName"> First Name </option>
+												<option value="LName"> Last Name </option>
+											</select>
+										</td>
+										<td>
+											<select class="form-dropdown" id="sor" name="sor">
+												<option value="ASC"> Ascending </option>
+												<option value="DESC"> Descending </option>
+											</select>
+										</td>
+										<td></td>
+									</tr>
+								</table>
+								<br/><br/>
+								<style>
+									.center {
+										text-align: center;
+									}
+								</style>
+								<div class="center">
+									<input type="submit" value="Filter">
+									<input type="submit" name="clear" value="Clear">
+								</div>
+							</form>
+
+                        </div>
+					</div>
+
+					<?php if (empty($pats)) : ?>
+						<div class="card shadow mb-4">
+							<div class="card-header py-3">
+								<h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+							</div>
+							<div class="card-body">
+								<div class="table-responsive">
+									No Rows Found
+								</div>
+							</div>
+						</div>
+					<?php else : ?>
                     <!-- Content Row -->
-                          <!-- DataTales Example -->
+                    <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
                             <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                  <style type="text/css">
-          .form-style-5 {
-            max-width: 900px;
-            padding: 20px 20px;
-            background: #ecebfa;
-            margin: 10px auto;
-            padding: 30px;
-            background: #ecebfa;
-            border-radius: 8px;
-            font-family: "Segoe UI";
-          }
-
-          .form-style-5 fieldset {
-            border: none;
-          }
-
-          .form-style-5 legend {
-            font-size: 1.4em;
-            margin-bottom: 10px;
-          }
-
-          .form-style-5 label {
-            display: block;
-            margin-bottom: 8px;
-          }
-
-          .form-style-5 input[type="text"],
-          .form-style-5 input[type="date"],
-          .form-style-5 input[type="datetime"],
-          .form-style-5 input[type="email"],
-          .form-style-5 input[type="number"],
-          .form-style-5 input[type="search"],
-          .form-style-5 input[type="time"],
-          .form-style-5 input[type="url"],
-          .form-style-5 textarea,
-          .form-style-5 select {
-            font-family: "Segoe UI";
-            background: #e0ccff;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            margin: 0;
-            outline: 0;
-            padding: 10px;
-            width: 100%;
-            box-sizing: border-box;
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            background-color: #ecebfa;
-            color: #8a97a0;
-            -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03) inset;
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03) inset;
-            margin-bottom: 30px;
-          }
-
-          .form-style-5 input[type="text"]:focus,
-          .form-style-5 input[type="date"]:focus,
-          .form-style-5 input[type="datetime"]:focus,
-          .form-style-5 input[type="email"]:focus,
-          .form-style-5 input[type="number"]:focus,
-          .form-style-5 input[type="search"]:focus,
-          .form-style-5 input[type="time"]:focus,
-          .form-style-5 input[type="url"]:focus,
-          .form-style-5 textarea:focus,
-          .form-style-5 select:focus {
-            background: #d2d9dd;
-          }
-
-          .form-style-5 select {
-            -webkit-appearance: menulist-button;
-            height: 35px;
-          }
-
-          .form-style-5 .number {
-            background: #5145cd;
-            color: #fff;
-            height: 30px;
-            width: 30px;
-            display: inline-block;
-            font-size: 0.8em;
-            margin-right: 4px;
-            line-height: 30px;
-            text-align: center;
-            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
-            border-radius: 15px 15px 15px 0px;
-          }
-
-          .form-style-5 input[type="submit"],
-          .form-style-5 input[type="button"] {
-            position: relative;
-            display: block;
-            padding: 19px 39px 18px 39px;
-            color: #FFF;
-            margin: 0 auto;
-            background: #5145cd;
-            font-size: 18px;
-            text-align: center;
-            font-style: normal;
-            width: 100%;
-            border: 1px solid #5145cd;
-            border-width: 1px 1px 3px;
-            margin-bottom: 10px;
-          }
-
-          .form-style-5 input[type="submit"]:hover,
-          .form-style-5 input[type="button"]:hover {
-            background: #d6d6f5;
-            color: black;
-          }
-        </style>
-       <header class="text-xl font-semibold" style="Text-align:center; font-size:40px; ">Add Staff member</header>
-        <div class="form-style-5" id="submit">
-        
-          <form>
-            <fieldset>
-              <legend><span class="number">1</span> Teacher Details</legend>
-
-              <div class="dropdown">
-                
-                <input type="text" name="field1" placeholder=" Name *">
-<input type="text" name="field2" placeholder="UserID *">
-                <input type="text" name="field3" placeholder="Password *">
-<input type="text" name="field4" placeholder="Address*">
-                
-                </select>
-
-              </div>
-              
-
-
-              <legend><span class="number">2</span> Other</legend>
-<input type="text" name="field5" placeholder="Adhar No*">
-<input type="text" name="field6" placeholder="Education*">
-<input type="text" name="field7" placeholder="Age*">
-<span>JOINING DATE</span> <input type="date" name="begin" 
-        placeholder="dd-mm-yyyy" value=""
-        min="1997-01-01" max="2030-12-31"> 
-<select id="domain" name="field8"onchange="ChangeGuideList()">
-                <optgroup label="Gender">
-                  <option value="webdev">male</option>
-                  <option value="AI and ML">female</option>
-                  <option value="Security">custom</option>
-                  
-                </optgroup> 
-              </select>
-
-              <select id="domain" name="field9"onchange="ChangeGuideList()">
-                <optgroup label="Designation">
-                  <option value="des1">Doctor</option>
-                  <option value="des2">Nurse</option>
-                  <option value="des3">ward boy</option>
-                  
-                </optgroup> 
-              </select>
-             
-            <input type="submit" value="Submit"/>
-
-          </form>
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Adhar No</th>
+                                            <th>Address </th>
+                                            <th>Age</th>
+                                            <th>Symptoms</th>
+                                            <th>Health Insurance</th>
+                                            <th>Covid Report</th>
+                                        </tr>
+                                    </thead>
+									<tbody>
+										<?php foreach($pats as $pat) : ?>
+											<tr>
+												<td>
+												<?php
+													echo $pat->FName;
+													echo " ";
+													echo $pat->LName;
+												?>
+												</td>
+												<td><?php echo $pat->Aadhar?></td>
+												<td>
+												<?php
+													echo $pat->Address1;
+													echo "<br>";
+													echo $pat->Address2;
+													echo "<br>";
+													echo $pat->City;
+													echo "<br>";
+													echo $pat->State;
+													echo "<br>";
+													echo $pat->ZipCode;
+												?>
+												</td>
+												<td><?php echo $pat->age?></td>
+												<td><?php echo $pat->Symptoms?></td>
+												<td><?php echo $pat->Insuarance?></td>
+												<td>
+												<?php
+													echo $pat->Attachment1;
+													echo "<br>";
+													echo $pat->Attachment2;
+												?>
+												</td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
+
+
+			<?php endif; ?>
 
                 </div>
 
@@ -407,8 +459,9 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal-->
-    
+
+        </div>
+    </div>
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -430,7 +483,3 @@
 </body>
 
 </html>
-
-
-
-

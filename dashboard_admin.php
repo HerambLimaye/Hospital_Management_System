@@ -456,7 +456,19 @@ if(isset($_POST['addstaff'])){
 
     <!-- Logout Modal-->
 
-
+    <script>
+    window.watsonAssistantChatOptions = {
+        integrationID: "0005b041-1467-4d43-93f2-3b3b9371f390", // The ID of this integration.
+        region: "eu-gb", // The region your integration is hosted in.
+        serviceInstanceID: "dcee2fc2-7a8e-4f2b-b059-13b16d407752", // The ID of your service instance.
+        onLoad: function(instance) { instance.render(); }
+      };
+    setTimeout(function(){
+      const t=document.createElement('script');
+      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/loadWatsonAssistantChat.js";
+      document.head.appendChild(t);
+    });
+  </script>
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

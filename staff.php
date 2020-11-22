@@ -1,4 +1,13 @@
+<?php
+session_start();
 
+require_once "pdo.php";
+
+if ( !isset($_SESSION['userid']) || strlen($_SESSION['userid']) < 1  ) {
+    die('Name parameter missing');
+}
+
+ ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -32,7 +41,7 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="#">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
@@ -44,75 +53,54 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="dashboard.html">
+                <a class="nav-link" href="dashboard_admin.php">
                     <i class="fas fa-tachometer-alt"></i>
-                    <span>STATISTICS</span></a>
+                    <span>Add Hospital Staff</span></a>
             </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            
+
 
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="add_patient.html" data-toggle="collapse" data-target="#collapseTwo"
+                <a class="nav-link collapsed" href="delete.php" data-toggle="collapse" data-target="#collapseTwo"
                     aria-expanded="true" aria-controls="collapseTwo">
-                    
-                    <span>Add patient</span>
+
+                    <span>Delete Hospital Staff</span>
                 </a>
-                
+
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
-                <a class="nav-link collapsed" href="tables.html" data-toggle="collapse" data-target="#collapseUtilities"
+                <a class="nav-link collapsed" href="patdet.php" data-toggle="collapse" data-target="#collapseUtilities"
                     aria-expanded="true" aria-controls="collapseUtilities">
                     <i class="fas fa-chevron-right"></i>
                     <span>patients details</span>
                 </a>
                             </li>
+ <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                    aria-expanded="true" aria-controls="collapseUtilities">
+                    <i class="fas fa-chevron-right"></i>
+                    <span>staff details</span>
+                </a>
+                            </li>
+
 
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading 
-            <div class="sidebar-heading">
-                Addons
-            </div>-->
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="discharge.html" data-toggle="collapse" data-target="#collapsePages"
-                    aria-expanded="true" aria-controls="collapsePages">
-                   
-                    <span>Discharge</span>
-                </a>
-                
-            </li>
-
-            <!-- Nav Item - Charts 
-            <li class="nav-item">
-                <a class="nav-link" href="charts.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>-->
-
-            <!-- Nav Item - Tables 
-            <li class="nav-item">
-                <a class="nav-link" href="tables.html">
-                    <i class="fas fa-table"></i>
-                    <span>Tables</span></a>
-            </li>-->
-
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 
-            
+
 
             <!-- Sidebar Message -->
             <div class="sidebar-card">
                 <img class="sidebar-card-illustration mb-2" src="img/undraw_rocket.svg" alt="">
-                <a class="btn btn-success btn-sm" href="login.html">logout</a>
+                <a class="btn btn-success btn-sm" href="logout.php">logout</a>
             </div>
 
         </ul>
@@ -179,17 +167,15 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                
+
                             </a>
                             <!-- Dropdown - Alerts -->
-                            
+
                         </li>
 
                         <!-- Nav Item - Messages -->
-                       
-                        <div class="topbar-divider d-none d-sm-block"></div>
 
-                        
+                        <div class="topbar-divider d-none d-sm-block"></div>
 
                     </ul>
 
@@ -197,7 +183,10 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+
 
                     <!-- Content Row -->
                           <!-- DataTales Example -->
@@ -210,29 +199,52 @@
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
+                                            <th>UserID</th>
                                             <th>Name</th>
-                                            <th>Adhar No</th>
                                             <th>address </th>
+                                            <th>Adhar</th>
+                                            <th>Education</th>
                                             <th>Age</th>
-                                            <th>Symptoms</th>
-                                            <th>age</th>
-                                            <th>health inssurance</th>
-                                            <th>Covid Report</th>
+                                            <th>DOJ</th>
+                                            <th>gender</th>
+                                            <th>Designation</th>
                                         </tr>
                                     </thead>
-                                    
-                                        <tr>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                            <th></th>
-                                        </tr>
-                                    
-                                   
+
+                                    <?php
+                                    if(isset($_SESSION['userid'])){
+                                      $stmtf = $pdo->query('SELECT * FROM staffdet');
+                                      $rowf = $stmtf->fetchAll(PDO::FETCH_ASSOC);
+                                      foreach ( $rowf as $rowsf ) {
+                                          echo "<tr><td>";
+                                          echo(htmlentities($rowsf['userid']));
+                                          echo "</td><td>";
+                                          echo(htmlentities($rowsf['name']));
+                                          echo "</td><td>";
+                                          echo(htmlentities($rowsf['address']));
+                                          echo "</td><td>";
+                                          echo(htmlentities($rowsf['adhar']));
+                                          echo "</td><td>";
+                                          echo(htmlentities($rowsf['education']));
+                                          echo "</td><td>";
+                                          echo(htmlentities($rowsf['age']));
+                                          echo "</td><td>";
+                                          echo(htmlentities($rowsf['doj']));
+                                          echo "</td><td>";
+                                          if($rowsf['gender']==1)echo "Male";
+                                          else if($rowsf['gender']==2)echo "Female";
+                                          else if($rowsf['gender']==3)echo "Other";
+                                          echo "</td><td>";
+                                          if($rowsf['desg']==1)echo "Doctor";
+                                          else if($rowsf['desg']==2)echo "Nurse";
+                                          else if($rowsf['desg']==3)echo "other staff";
+                                          echo('</td></tr>');
+                                      }
+                                    }
+                                ?>
+
+
+
                                 </table>
                             </div>
                         </div>
@@ -266,9 +278,8 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
-   
-        </div>
-    </div>
+    <!-- Logout Modal-->
+
 
     <!-- Bootstrap core JavaScript-->
     <script src="vendor/jquery/jquery.min.js"></script>
@@ -290,7 +301,3 @@
 </body>
 
 </html>
-
-
-
-
